@@ -128,9 +128,9 @@ Group findings under these headings, in this order. If a pillar has none, write 
 Bullet the E findings that cut database reads/writes/deletes, storage egress, or function usage, each with rough magnitude. (If none: "No backend cost findings.")
 
 ### Plan of Attack
-Ordered waves, sequenced by value ÷ effort ÷ risk (quick high-value low-risk wins first; large refactors last). One wave = one branch commit/PR. For each wave state: the finding IDs, a one-line rationale, dependencies/ordering, the **Tier** (minimum model tier allowed to implement it — see Implementation risk gate), a **Safety net** (tests/smoke to add or run before the wave), and **Verify** (checks to run after).
+Ordered waves, sequenced by value ÷ effort ÷ risk (quick high-value low-risk wins first; large refactors last). One wave = one branch commit/PR. For each wave state: the finding IDs, a one-line rationale, dependencies/ordering, the **Tier** (minimum model tier allowed to implement it — see Implementation risk gate), the **Review** tier (R0 automated-only | R1 cheap review | R2 strong review — see definitions), a **Safety net** (tests/smoke to add or run before the wave), and **Verify** (checks to run after).
 
-- **Wave 1 — <name>:** IDs: <IDs> · Tier: <Any | Capable | Strongest+review> · Safety net: <what to lock in first> · Verify: <what to run after> — <why first>
+- **Wave 1 — <name>:** IDs: <IDs> · Tier: <Any | Capable | Strongest+review> · Review: <R0 | R1 | R2> · Safety net: <what to lock in first> · Verify: <what to run after> — <why first>
 - **Wave 2 — ...**
 
 ### Next step
@@ -142,6 +142,7 @@ State: "Review complete — no code changed. Handing off to the brainstorming sk
 - **Effort:** S ≈ minutes, localized. M ≈ one module/session. L = cross-cutting refactor.
 - **Risk (of making the change):** Low = mechanical/safe. Med = touches shared behavior. High = broad blast radius or hard to verify.
 - **Model tier (who may implement a wave):** derived from the wave's highest-Risk finding. Low → **Any** model. Med → **Capable** model, or a cheaper model whose diff is reviewed by a strong model or human. High → **Strongest tier + mandatory diff review** (strong model or human) before merge. Never batch a High-risk finding into a wave with others.
+- **Review tier (how expensive the wave's diff review should be):** derived from Class × Risk × safety-net, so a review never costs more than the work it guards. **R0** = automated gate only (tests + lint/build green **and** a diff-scope check; no LLM) — for Low-risk pure `Fix` with an authoritative safety net (dead-code/comment deletion, dep bumps). **R1** = cheap-model diff review — for Low-risk `Fix` touching live code with a passing characterization test. **R2** = strong-model (or human) diff review — for **any** Preserve-invariant, Med/High risk, security/access/data/cost surface, or no-safety-net wave. Any R0/R1 wave **escalates to R2** on a failed check, out-of-scope diff, or lower-tier flag. R0's safety depends on a real net — an untested dead-delete is R2, not R0.
 
 ### Finding class (triage — what remediation should do)
 Classify every finding so the remediation phase does not blindly "fix" load-bearing behavior.
@@ -164,7 +165,7 @@ CLEaR does not implement. But the Plan of Attack it emits is the contract the re
 - **Honor the wave Tier.** Low-risk: any model. Med: a capable model, or a cheaper model whose diff is reviewed by a strong model or human. High: strongest tier and a mandatory diff review before merge. When in doubt, escalate.
 - **Establish the Safety net before any behavior-changing (Med/High) wave.** Add characterization tests on the affected logic and/or a written smoke checklist for the affected surfaces, and confirm they pass on the current code first. Do not refactor behavior with no net — this matters most in codebases with few tests or no compile-time checks. Use the `test-driven-development` skill: write/confirm the test before touching behavior. If the code cannot be tested without first extracting a pure unit, that extraction is its own low-risk wave — do it first, under its own net.
 - **Keep diffs minimal.** Change only what the wave's finding IDs require; do not touch code outside the wave, and do not "drive-by" refactor. Preserve public entry points and update every import site / manifest when moving or splitting modules.
-- **Verify after each wave** (run its Verify checks — tests, lint, build where they exist, plus the smoke checklist) and commit only when green. A strong-model diff review is the cheapest guardrail: reviewing a diff costs far less than regenerating it, so it pairs well with a cheap implementer. Use the `requesting-code-review` skill for the diff review, and the `verification-before-completion` skill to require passing-check evidence before a wave is called done.
+- **Verify after each wave** (run its Verify checks — tests, lint, build where they exist, plus the smoke checklist) and commit only when green. Then review the diff **at the wave's Review tier** — R0 automated-only, R1 cheap review, R2 strong review (see definitions) — so a review never costs more than the work it guards; escalate to R2 on any failed check, out-of-scope diff, or flag. A diff review is the cheapest guardrail (reviewing a diff costs far less than regenerating it), so R1/R2 pair well with a cheap implementer. Use the `requesting-code-review` skill for R1/R2, and the `verification-before-completion` skill to require passing-check evidence before a wave is called done.
 - **Leave vendored/generated files alone** unless a finding names them.
 - **Confirm Verify-intent findings before touching them.** Do not implement a Verify-intent finding until its intent question is answered by the user or by evidence. If the behavior is deliberate, it becomes Won't-fix or Preserve-invariant — not a deletion.
 - **Execute each wave in a fresh context.** Do NOT run a whole remediation in one long session — a large plan overflows any model's working memory and a cheaper model degrades fastest. Start each wave from a clean session (or a dedicated subagent) seeded only with the plan file and that wave's brief. The written plan is the memory, not the chat history.
@@ -186,7 +187,8 @@ If any of these cannot be met for a wave, stop and surface it rather than procee
 | Guessing about other files | Verify, or mark the finding [unverified]. |
 | Editing "quick wins" during review | Review only. No edits. Ever. |
 | Claiming exhaustive review done after a subset | One report per batch; not complete until every batch is covered. |
-| Plan of Attack waves missing Tier / Safety net / Verify | Annotate every wave (see Implementation risk gate). |
+| Plan of Attack waves missing Tier / Review / Safety net / Verify | Annotate every wave (see Implementation risk gate). |
+| Mandating a strong review on trivial waves | Assign a Review tier (R0/R1/R2) per wave; a review must not cost more than the work. |
 | Sending a High-risk wave to a cheap model with no review | High → strongest tier + mandatory diff review; never batch High-risk with other findings. |
 | Treating every finding as a defect to delete | Default to Verify-intent when behavior could be intentional; classify all findings. |
 | Preserve-invariant / Verify-intent finding with no Invariant line | Fill in the Invariant, or the intent question to answer first. |
@@ -201,6 +203,6 @@ If any of these cannot be met for a wave, stop and surface it rather than procee
 - A finding has no `path:line`.
 - You skipped a pillar heading.
 - There is no Plan of Attack, or you did not hand off to `brainstorming`.
-- A Plan of Attack wave is missing its Tier, Safety net, or Verify.
+- A Plan of Attack wave is missing its Tier, Review tier, Safety net, or Verify.
 - A finding has no Class, or a Preserve-invariant / Verify-intent finding has no Invariant.
 - You proposed a fix for a Verify-intent finding before its intent was confirmed.
