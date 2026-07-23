@@ -32,6 +32,7 @@ Split the plan into independent tracks. Each track gets its own `brainstorming` 
 5. **Verify:** run the plan's stated test + lint/build commands; show output as evidence (`verification-before-completion`).
 6. **Commit** — one wave = one commit/PR, revertible on its own.
 7. **Self-review handoff:** launch a strong-model `requesting-code-review` on the wave diff, address any blockers, then **STOP**. Do not start the next wave.
+8. **Emit the next handoff.** Print the prompt to run the next wave using the "Handoff format" below (always labeled for a **fresh chat**). If every wave is now ticked, print `All waves complete — <TRACK> track finished` instead.
 
 ## Step 4 — Chat prompts (copy-paste, one variable set per track)
 
@@ -40,14 +41,22 @@ Substitute `{MASTER}` (master plan path), `{TRACK}` (track name), and `{PLAN}` (
 ### Design chat — run once per track
 
 ```
-Read {MASTER} in full. Design the {TRACK} track only: run /brainstorming then /writing-plans to produce {PLAN}. One wave per {TRACK}-tagged finding, ordered low-risk-first, each written as a self-contained brief following the Standard wave steps (incl. the step-7 self-review handoff). For a finding tagged with multiple tracks, include only the slice safe at this track's tier and defer the rest to its other track with a one-line note — do not stop to ask. Record the project's concrete test + lint/build commands in the plan header. Render the waves as a "- [ ] Wave N: <ID> — <summary>" checklist. Preserve every stated Invariant. List the waves and STOP for my review — write no code.
+Read {MASTER} in full. Design the {TRACK} track only: run /brainstorming then /writing-plans to produce {PLAN}. One wave per {TRACK}-tagged finding, ordered low-risk-first, each written as a self-contained brief following the Standard wave steps (incl. the step-7 self-review handoff). For a finding tagged with multiple tracks, include only the slice safe at this track's tier and defer the rest to its other track with a one-line note — do not stop to ask. Record the project's concrete test + lint/build commands in the plan header. Render the waves as a "- [ ] Wave N: <ID> — <summary>" checklist. Preserve every stated Invariant. List the waves and STOP for my review — write no code. After the list, print the handoff to begin: "Approved? Then open a NEW chat and paste:" followed by the exact Execution chat prompt below (a fresh chat is deliberate — the plan file, not a long session, is the memory).
 ```
 
 ### Execution chat — run once per wave (repeat in a fresh chat until the checklist is done)
 
 ```
-Read {PLAN} and {MASTER}. Execute ONLY the next unchecked wave, following the Standard wave steps exactly: re-verify line numbers, honor the finding Class/Invariant, minimal diff + CLEaR, add the specified safety net, run the plan's stated test + lint/build commands and show evidence, commit, tick the wave's checkbox in the plan, then launch a strong-model requesting-code-review on the diff. Then STOP. Do not start another wave.
+Read {PLAN} and {MASTER}. Execute ONLY the next unchecked wave, following the Standard wave steps exactly: re-verify line numbers, honor the finding Class/Invariant, minimal diff + CLEaR, add the specified safety net, run the plan's stated test + lint/build commands and show evidence, commit, tick the wave's checkbox in the plan, then launch a strong-model requesting-code-review on the diff. Then STOP and do not start another wave. Finally, print the next handoff (Standard wave step 8): "Next wave (N of M) — open a NEW chat and paste:" followed by this exact same prompt; if every wave is now ticked, print "All waves complete — <TRACK> track finished" instead.
 ```
+
+### Handoff format (why a new chat)
+
+The design chat and every execution wave end by handing you the next prompt — always pasted into a **new chat**, never continued in place. State the reason inline so it isn't skipped:
+
+> ▶ Next wave (N of M) — open a **NEW** chat and paste the prompt below. The fresh context is deliberate: the plan file is the memory, and long sessions degrade cheaper models and blur wave isolation.
+
+A handoff never means "keep going here." The step-7 STOP is hard; step 8 only prints text for you to carry to the next clean chat.
 
 ## Tiering
 
