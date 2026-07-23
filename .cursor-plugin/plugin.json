@@ -2,7 +2,7 @@
   "name": "clear-review",
   "version": "1.0.0",
   "description": "CLEaR code-review skill: audits code for Clean/Lightweight/Efficient/Robust improvements and emits a risk-tiered Plan of Attack that lets cheaper models remediate safely. Review-only; never edits code.",
-  "author": { "name": "JonC84" },
+  "author": { "name": "JonC84", "email": "joncorbett84@gmail.com" },
   "repository": "https://github.com/JonC84/cursor-clear-review",
   "license": "MIT",
   "logo": "assets/logo.png",

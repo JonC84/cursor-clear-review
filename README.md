@@ -59,14 +59,6 @@ Windows PowerShell: `Copy-Item -Recurse cursor-clear-review\skills\clear-review 
 
 In Agent chat, ask for a "CLEaR review", or invoke `/clear-review`.
 
-## Publishing to the Cursor Marketplace
-
-1. Push this repo to a **public** GitHub repository (marketplace plugins must be open source).
-2. Add a `logo` to `.cursor-plugin/plugin.json` pointing at a committed image (e.g. `assets/logo.svg`).
-3. Submit the repo link at [cursor.com/marketplace/publish](https://cursor.com/marketplace/publish) — the Cursor team manually reviews every plugin and update.
-
-Before publishing, update the placeholder fields: the `repository` URL and `author` in `.cursor-plugin/plugin.json`, and the clone URL above (currently assumes `github.com/JonC84/cursor-clear-review`).
-
 ## Pairs with (optional): Superpowers
 
 CLEaR hands off to these Superpowers-plugin skills for the remediation phase: `brainstorming`, `test-driven-development`, `requesting-code-review`, `verification-before-completion`, `writing-plans`. If you don't have Superpowers installed, the handoffs simply become "use your own equivalent step" — the review contract and Plan of Attack are fully self-contained.
