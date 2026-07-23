@@ -19,6 +19,10 @@ List every `Verify-intent` finding as a plain question. Get the user's decision 
 
 Split the plan into independent tracks. Each track gets its own `brainstorming` design → `writing-plans` plan. Never write one mega-spec. Order tracks by value-first / risk-last (quick wins → data integrity → cost → refactors), unless live exposure forces security first.
 
+**Give each finding one primary track.** If a finding has both a safe slice and a behavior-changing slice (e.g. delete dead code *and* de-duplicate live logic), split it into two rows — a safe row in the earlier track, a risky row in the later track — instead of tagging it `X/Y`. Dual tags force every design chat to stop and ask which slice belongs where; single tags let it run.
+
+**Default rule for any dual-tagged finding you still encounter** (so a design chat never has to ask): `X/Y` means only the safe / dead-delete slice belongs to the earlier / lower-risk track; behavior-changing slices defer to the higher-risk track. When designing track X, include only the slices safe at X's tier and defer the rest to their other track with a one-line note. Default to this stricter split; ask only on genuine ambiguity.
+
 ## Step 3 — Standard wave steps (baked into every execution wave)
 
 1. **Re-verify** every `file:line` before editing — the review is a snapshot; line numbers drift.
@@ -36,7 +40,7 @@ Substitute `{MASTER}` (master plan path), `{TRACK}` (track name), and `{PLAN}` (
 ### Design chat — run once per track
 
 ```
-Read {MASTER} in full. Design the {TRACK} track only: run /brainstorming then /writing-plans to produce {PLAN}. One wave per {TRACK}-tagged finding, ordered low-risk-first, each written as a self-contained brief following the Standard wave steps (incl. the step-7 self-review handoff). Record the project's concrete test + lint/build commands in the plan header. Render the waves as a "- [ ] Wave N: <ID> — <summary>" checklist. Preserve every stated Invariant. List the waves and STOP for my review — write no code.
+Read {MASTER} in full. Design the {TRACK} track only: run /brainstorming then /writing-plans to produce {PLAN}. One wave per {TRACK}-tagged finding, ordered low-risk-first, each written as a self-contained brief following the Standard wave steps (incl. the step-7 self-review handoff). For a finding tagged with multiple tracks, include only the slice safe at this track's tier and defer the rest to its other track with a one-line note — do not stop to ask. Record the project's concrete test + lint/build commands in the plan header. Render the waves as a "- [ ] Wave N: <ID> — <summary>" checklist. Preserve every stated Invariant. List the waves and STOP for my review — write no code.
 ```
 
 ### Execution chat — run once per wave (repeat in a fresh chat until the checklist is done)
