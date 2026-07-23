@@ -58,6 +58,28 @@ The design chat and every execution wave end by handing you the next prompt — 
 
 A handoff never means "keep going here." The step-7 STOP is hard; step 8 only prints text for you to carry to the next clean chat.
 
+## Automated mode (optional: subagent orchestration)
+
+The manual flow (fresh chat per wave) exists for context isolation + a human review gate. Subagents give the same isolation automatically — each runs in a clean context — so an orchestrator can drive the loop instead. Use this for **low-risk tracks** (mostly `Fix` / quick wins); keep the manual flow + human approval for Med/High-risk and `Preserve-invariant` waves.
+
+**Sequencing is mandatory.** Waves commit to the same branch and each re-verifies line numbers against the just-changed tree, so run them one at a time: dispatch → await → review → next. Never run two waves of one track concurrently on the same branch.
+
+Orchestrator loop (parent session):
+
+1. Dispatch an **execution subagent** for the next unchecked wave, on that wave's Tier model (cheap for Fix/QW); its prompt is the Execution chat prompt.
+2. **Await** it. On any test/lint/review failure, STOP and surface — do not proceed.
+3. Dispatch a **strong-model review subagent** on the wave diff (`requesting-code-review`).
+4. **Low-risk** waves proceed automatically; **Med/High or Preserve-invariant** waves pause for human approval before merge.
+5. Repeat until every wave is ticked, then report a summary.
+
+**Parallelism** is only safe across genuinely independent waves or independent tracks, each in its **own git worktree/branch** merged sequentially (`using-git-worktrees` / `best-of-n-runner`). Parallel commits to one branch will collide — never parallelize waves within a track on one branch.
+
+Orchestrator kickoff prompt:
+
+```
+Orchestrate the {TRACK} track from {PLAN} (+ {MASTER}) via subagents, sequentially. For each unchecked wave: (1) dispatch an execution subagent on the wave's Tier model with the Execution chat prompt; (2) await it — on any test/lint/review failure STOP and report; (3) dispatch a strong-model code-review subagent on the wave diff; (4) auto-proceed only for Low-risk waves — pause for my approval before merging any Med/High-risk or Preserve-invariant wave. Never run waves in parallel on this branch. Repeat until all waves are ticked, then report a summary.
+```
+
 ## Tiering
 
 Run Fix/Preserve-invariant waves on a capable-but-cheap model; the step-7 diff review by a strong model is what makes that safe (reviewing a diff is far cheaper than regenerating it). Any `High`-risk wave → strongest tier + mandatory review, isolated PR, never batched.
