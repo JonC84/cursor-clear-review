@@ -8,7 +8,7 @@ A review-only skill for Cursor that audits code against four pillars — **C**le
 
 Most "review" prompts dump a wall of suggestions and leave you to sort out what's safe. CLEaR is built around two hard problems:
 
-- **Safe remediation on cheaper models.** Every finding is tagged with **Severity / Effort / Risk** and a **model tier** (Any / Capable / Strongest+review). The Plan of Attack sequences the work into small, revertible waves so a low-cost model can implement most of it, with a strong-model diff review as the cheap guardrail.
+- **Safe remediation on cheaper models.** Every finding is tagged with **Severity / Effort / Risk** and a **model tier** (Any / Capable / Strongest+review). The Plan of Attack sequences the work into small, revertible waves so a low-cost model can implement most of it, with a **right-sized diff review** (R0 automated-only · R1 cheap · R2 strong) as the cheap guardrail — so a review never costs more than the work it guards.
 - **Not breaking intentional behavior.** Every finding is triaged as **Fix / Preserve-invariant / Verify-intent / Won't-fix**. Load-bearing behavior (auth/offline boot, cache/prefetch correctness, security integrations, telemetry) is flagged to *confirm before touching* — the skill actively resists "defect-elimination bias."
 
 ## The four pillars
@@ -79,11 +79,16 @@ CLEaR hands off to these Superpowers-plugin skills for the remediation phase: `b
 ...
 
 ### Plan of Attack
-- Wave 1 — <name>: IDs · Tier: Capable · Safety net: <tests> · Verify: <checks>
+- Wave 1 — <name>: IDs · Tier: Capable · Review: R1 · Safety net: <tests> · Verify: <checks>
 ...
 ### Next step
 Review complete — no code changed. Handing off to remediation design.
 ```
+
+## Changelog
+
+- **1.1.0** — Per-wave **Review tiers** (R0/R1/R2) so review cost scales to wave risk; fresh-chat per-wave handoffs, **track-completion continuity**, and an optional **subagent-orchestration** mode in the exhaustive remediation workflow.
+- **1.0.0** — Initial release.
 
 ## License
 
