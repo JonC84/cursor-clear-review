@@ -87,7 +87,7 @@ Review complete — no code changed. Handing off to remediation design.
 
 ## Changelog
 
-- **1.1.0** — Per-wave **Review tiers** (R0/R1/R2); fresh-chat handoffs; **track-completion continuity**; **Automated mode** at the spec/plan handoff with **Continuous** or **Pause** (new chat optional for Automated). Pause prints **Quick manual checks** (from each wave’s `Manual smoke:` line) so you can confirm nothing broke before continuing.
+- **1.1.0** — Per-wave **Review tiers** (R0/R1/R2); fresh-chat handoffs; **track-completion continuity**; **Automated mode** at the spec/plan handoff with **Continuous** or **Pause** (new chat optional for Automated). Pause prints **Quick manual checks**. Progressive Standard-step ticks; **Wave N is checked only after steps 1–7 are complete**.
 - **1.0.0** — Initial release.
 
 ## License
