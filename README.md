@@ -87,7 +87,7 @@ Review complete — no code changed. Handing off to remediation design.
 
 ## Changelog
 
-- **1.1.0** — Per-wave **Review tiers** (R0/R1/R2) so review cost scales to wave risk; fresh-chat per-wave handoffs, **track-completion continuity**, and an optional **subagent-orchestration** mode in the exhaustive remediation workflow.
+- **1.1.0** — Per-wave **Review tiers** (R0/R1/R2) so review cost scales to wave risk; fresh-chat per-wave handoffs, **track-completion continuity**, and **Automated mode** at the spec/plan handoff with **Continuous** (through track completion) or **Pause** (between waves) — new chat optional for Automated (subagents provide isolation).
 - **1.0.0** — Initial release.
 
 ## License

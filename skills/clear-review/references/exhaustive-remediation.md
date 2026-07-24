@@ -41,22 +41,42 @@ Substitute `{MASTER}` (master plan path), `{TRACK}` (track name), and `{PLAN}` (
 ### Design chat — run once per track
 
 ```
-Read {MASTER} in full. Design the {TRACK} track only: run /brainstorming then /writing-plans to produce {PLAN}. One wave per {TRACK}-tagged finding, ordered low-risk-first, each written as a self-contained brief following the Standard wave steps (incl. the step-7 tiered review). Assign each wave a Review tier from its Class × Risk × safety-net (R0 = Low-risk pure Fix — dead-delete / hygiene / dep bump — with an authoritative safety net; R1 = Low-risk Fix touching live code with a passing characterization test; R2 = any Preserve-invariant, Med/High risk, security/access/data/cost surface, or a wave with no real safety net). For a finding tagged with multiple tracks, include only the slice safe at this track's tier and defer the rest to its other track with a one-line note — do not stop to ask. Record the project's concrete test + lint/build commands in the plan header. Render the waves as a "- [ ] Wave N (Rx): <ID> — <summary>" checklist, and render each wave's Standard wave steps as a "- [ ]" sub-checklist so execution can tick completed steps. Preserve every stated Invariant. List the waves and STOP for my review — write no code. After the list, print the handoff to begin: "Approved? Then open a NEW chat and paste:" followed by the exact Execution chat prompt below (a fresh chat is deliberate — the plan file, not a long session, is the memory).
+Read {MASTER} in full. Design the {TRACK} track only: run /brainstorming then /writing-plans to produce {PLAN}. One wave per {TRACK}-tagged finding, ordered low-risk-first, each written as a self-contained brief following the Standard wave steps (incl. the step-7 tiered review). Assign each wave a Review tier from its Class × Risk × safety-net (R0 = Low-risk pure Fix — dead-delete / hygiene / dep bump — with an authoritative safety net; R1 = Low-risk Fix touching live code with a passing characterization test; R2 = any Preserve-invariant, Med/High risk, security/access/data/cost surface, or a wave with no real safety net). For a finding tagged with multiple tracks, include only the slice safe at this track's tier and defer the rest to its other track with a one-line note — do not stop to ask. Record the project's concrete test + lint/build commands in the plan header. Render the waves as a "- [ ] Wave N (Rx): <ID> — <summary>" checklist, and render each wave's Standard wave steps as a "- [ ]" sub-checklist so execution can tick completed steps. Preserve every stated Invariant. List the waves and STOP for my review — write no code. After the list, print the **spec/plan written handoff** (3-way menu below): Manual (NEW chat required) + Automated · Continuous + Automated · Pause (NEW chat optional for both Automated options — paste here or in a NEW chat). Include the exact Execution prompt and both Orchestrator kickoff prompts filled for this track.
 ```
 
-### Execution chat — run once per wave (repeat in a fresh chat until the checklist is done)
+### Spec/plan written handoff (print after the wave list)
+
+```
+Approved? Choose how to execute:
+
+1) Manual — open a NEW chat and paste:
+   <Execution chat prompt>
+   (fresh chat required: the parent session is the executor)
+
+2) Automated · Continuous — paste here *or* in a NEW chat:
+   <Orchestrator Continuous kickoff>
+   (subagents provide isolation; new chat optional)
+
+3) Automated · Pause — paste here *or* in a NEW chat:
+   <Orchestrator Pause kickoff>
+   (same; pause after each cleared wave for testing/analysis)
+```
+
+### Execution chat — run once per wave (Manual mode; repeat in a fresh chat until the checklist is done)
 
 ```
 Read {PLAN} and {MASTER}. Execute ONLY the next unchecked wave, following the Standard wave steps exactly: re-verify line numbers, honor the finding Class/Invariant, minimal diff + CLEaR, add the specified safety net, run the plan's stated test + lint/build commands and show evidence, commit, tick the wave's checkbox and its completed sub-steps in the plan (do not otherwise edit the plan — never rewrite/reorder/revert its prose or tags), then review the diff at that wave's Review tier (R0 = automated gate only, no LLM; R1 = cheap-model requesting-code-review; R2 = strong-model requesting-code-review), escalating to R2 on any failed check, out-of-scope diff, or flagged issue. Then STOP and do not start another wave. Finally, print the next handoff (Standard wave step 8): "Next wave (N of M) — open a NEW chat and paste:" followed by this exact same prompt; if every wave is now ticked, emit the Track-completion handoff instead (the next track's Design prompt for a NEW chat, or — if this was the last track — all-tracks-complete plus a recommended fresh exhaustive CLEaR re-review).
 ```
 
-### Handoff format (why a new chat)
+### Handoff format (Manual vs Automated)
 
-The design chat and every execution wave end by handing you the next prompt — always pasted into a **new chat**, never continued in place. State the reason inline so it isn't skipped:
+**Manual:** each wave ends by handing you the next prompt for a **new chat** — never continue in place. State the reason inline:
 
 > ▶ Next wave (N of M) — open a **NEW** chat and paste the prompt below. The fresh context is deliberate: the plan file is the memory, and long sessions degrade cheaper models and blur wave isolation.
 
-A handoff never means "keep going here." The step-7 STOP is hard; step 8 only prints text for you to carry to the next clean chat.
+A Manual handoff never means "keep going here." The step-7 STOP is hard; step 8 only prints text for you to carry to the next clean chat.
+
+**Automated:** the parent is only an orchestrator; **subagents** provide isolation. Opening a new chat is **optional** — paste the Continuous or Pause kickoff in the design chat *or* a NEW chat. Prefer staying put when the wave list was just approved; open a NEW chat only if the design session is huge/noisy.
 
 ### Track-completion handoff (continuity between tracks)
 
@@ -70,24 +90,37 @@ This keeps at the track boundary the same fresh-chat discipline step 8 keeps at 
 
 ## Automated mode (optional: subagent orchestration)
 
-The manual flow (fresh chat per wave) exists for context isolation + a human review gate. Subagents give the same isolation automatically — each runs in a clean context — so an orchestrator can drive the loop instead. Use this for **low-risk tracks** (mostly `Fix` / quick wins); keep the manual flow + human approval for Med/High-risk and `Preserve-invariant` waves.
+Offer Automated at the **spec/plan written handoff** (alongside Manual), not only in a plan appendix. Subagents give wave isolation automatically — each runs in a clean context — so an orchestrator can drive the loop. **Opening a new chat is optional** for Automated (paste in the design chat or a NEW chat); Manual still requires a NEW chat because the parent *is* the executor.
 
-**Sequencing is mandatory.** Waves commit to the same branch and each re-verifies line numbers against the just-changed tree, so run them one at a time: dispatch → await → review → next. Never run two waves of one track concurrently on the same branch.
+Pick a cadence:
+
+- **Continuous** — after each wave's Review tier clears, immediately start the next unchecked wave through track completion. Still hard-STOP on any failed check / review flag / out-of-scope diff. Still pause for approval before starting the *next track*.
+- **Pause** — after each wave's Review tier clears, print a short summary (files, commit SHA, Review tier result) and STOP with `▶ Wave N done — reply continue / skip / abort`. Do not start the next wave until the user replies. Use this for testing/analysis between waves.
+
+Failures always hard-STOP in both modes. Pause is *between cleared waves*, not instead of Review tiers.
+
+**Sequencing is mandatory.** Waves commit to the same branch and each re-verifies line numbers against the just-changed tree, so run them one at a time: dispatch → await → review → (Continuous: next | Pause: wait). Never run two waves of one track concurrently on the same branch.
 
 Orchestrator loop (parent session):
 
 1. Dispatch an **execution subagent** for the next unchecked wave, on that wave's Tier model (cheap for Fix/QW); its prompt is the Execution chat prompt.
 2. **Await** it. On any test/lint/review failure, STOP and surface — do not proceed.
 3. **Review at the wave's Review tier:** R0 → automated checks only, no review subagent; R1 → dispatch a cheap-model review subagent; R2 → dispatch a strong-model review subagent (`requesting-code-review`). Escalate to R2 on any failure or out-of-scope diff.
-4. **Low-risk** waves proceed automatically; **Med/High or Preserve-invariant** waves (always R2) pause for human approval before merge.
-5. Repeat until every wave is ticked, then report a summary. **On track completion, offer to proceed to the next track but pause for approval** — a new track needs its own design + sign-off before any code; never auto-run it.
+4. **Continuous:** if clear, immediately start the next unchecked wave. **Pause:** if clear, STOP for `continue` / `skip` / `abort`.
+5. Repeat until every wave is ticked (or the user aborts), then report a summary. **On track completion, offer to proceed to the next track but pause for approval** — a new track needs its own design + sign-off before any code; never auto-run it.
 
 **Parallelism** is only safe across genuinely independent waves or independent tracks, each in its **own git worktree/branch** merged sequentially (`using-git-worktrees` / `best-of-n-runner`). Parallel commits to one branch will collide — never parallelize waves within a track on one branch.
 
-Orchestrator kickoff prompt:
+### Orchestrator kickoff — Continuous
 
 ```
-Orchestrate the {TRACK} track from {PLAN} (+ {MASTER}) via subagents, sequentially. For each unchecked wave: (1) dispatch an execution subagent on the wave's Tier model with the Execution chat prompt; (2) await it — on any test/lint/review failure STOP and report; (3) review at the wave's Review tier — R0: automated checks only, no review subagent; R1: dispatch a cheap-model code-review subagent; R2: dispatch a strong-model code-review subagent — escalating to R2 on any failure or out-of-scope diff; (4) auto-proceed only for Low-risk waves — pause for my approval before merging any Med/High-risk or Preserve-invariant wave. Never run waves in parallel on this branch. Repeat until all waves are ticked, then report a summary and offer to proceed to the next track (wait for my approval — do not start it automatically).
+Orchestrate the {TRACK} track from {PLAN} (+ {MASTER}) via subagents, mode=Continuous. For each unchecked wave sequentially: (1) dispatch an execution subagent on the wave's Tier model with the Execution chat prompt; (2) await it — on any test/lint/review failure STOP and report; (3) review at the wave's Review tier — R0: automated checks only, no review subagent; R1: dispatch a cheap-model code-review subagent; R2: dispatch a strong-model code-review subagent — escalating to R2 on any failure or out-of-scope diff; (4) if clear, immediately start the next unchecked wave — do not wait for me between waves. Never run waves in parallel on this branch. When all waves are ticked, emit the Track-completion handoff and pause for approval before any next-track design (do not start it automatically).
+```
+
+### Orchestrator kickoff — Pause
+
+```
+Orchestrate the {TRACK} track from {PLAN} (+ {MASTER}) via subagents, mode=Pause. For each unchecked wave sequentially: (1) dispatch an execution subagent on the wave's Tier model with the Execution chat prompt; (2) await it — on any test/lint/review failure STOP and report; (3) review at the wave's Review tier — R0: automated checks only, no review subagent; R1: dispatch a cheap-model code-review subagent; R2: dispatch a strong-model code-review subagent — escalating to R2 on any failure or out-of-scope diff; (4) after that wave's review clears: print a short wave summary (files, commit SHA, Review tier result) and STOP with: "▶ Wave N done — reply continue / skip / abort". Do not start the next wave until I reply continue (or skip to leave it unchecked and move on). Never run waves in parallel on this branch. When all waves are ticked (or I abort), emit the Track-completion handoff / status and pause for approval before any next-track design.
 ```
 
 ## Tiering
